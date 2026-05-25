@@ -14,6 +14,7 @@ CORS(app)  # allow GitHub Pages frontend to call this API
 # ── Load models once at startup ───────────────────────────────────────────────
 
 print("Loading embedding model...")
+os.environ["SENTENCE_TRANSFORMERS_HOME"] = os.path.join(os.path.dirname(__file__), "models")
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 print("Connecting to ChromaDB...")
