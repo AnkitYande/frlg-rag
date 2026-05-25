@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professor Oak's Lab — FRLG Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="lab-bg"></div>
+
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-left">
+          <img src="oak.png" alt="Professor Oak" class="oak-avatar" onerror="this.style.display='none'" />
+          <div>
+            <h1 class="title">Professor Oak's Lab</h1>
+            <p class="subtitle">FireRed &amp; LeafGreen Field Guide</p>
+          </div>
+        </div>
+        <div class="status-dot" id="statusDot" title="API status"></div>
+      </div>
+    </header>
+
+    <!-- Chat window -->
+    <main class="chat-window" id="chatWindow">
+      <!-- Welcome message injected by JS -->
+    </main>
+
+    <!-- Chunk drawer (debug) -->
+    <aside class="chunk-drawer" id="chunkDrawer">
+      <div class="chunk-drawer-header">
+        <span>📋 Research Notes Used</span>
+        <button class="close-btn" id="closeDrawer">✕</button>
+      </div>
+      <div class="chunk-list" id="chunkList"></div>
+    </aside>
+
+    <!-- Input area -->
+    <footer class="input-area">
+      <div class="input-row">
+        <input
+          type="text"
+          id="questionInput"
+          class="question-input"
+          placeholder="Ask Professor Oak anything about your journey..."
+          autocomplete="off"
+        />
+        <button class="send-btn" id="sendBtn">
+          <span class="send-icon">▶</span>
+        </button>
+      </div>
+      <div class="input-hints">
+        <span class="hint-chip" data-q="Where can I find Pikachu?">Where is Pikachu?</span>
+        <span class="hint-chip" data-q="How do I beat Brock?">Beat Brock</span>
+        <span class="hint-chip" data-q="What Pokémon can I catch on Route 3?">Route 3 Pokémon</span>
+        <span class="hint-chip" data-q="How do I get HM Cut?">Get HM Cut</span>
+        <span class="hint-chip" data-q="I'm stuck after getting the Boulder Badge, what do I do?">After Brock</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
