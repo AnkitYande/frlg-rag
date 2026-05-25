@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import chromadb
@@ -8,26 +9,43 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logging.getLogger("chromadb.telemetry").setLevel(logging.ERROR)
+
 app = Flask(__name__)
-CORS(app)  # allow GitHub Pages frontend to call this API
+CORS(app)
 
-# ── Load models once at startup ───────────────────────────────────────────────
-
-print("Loading embedding model...")
-os.environ["SENTENCE_TRANSFORMERS_HOME"] = os.path.join(os.path.dirname(__file__), "models")
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
-
-print("Connecting to ChromaDB...")
-# Path relative to where api.py lives — adjust if needed
 CHROMA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "chroma")
-chroma = chromadb.PersistentClient(path=CHROMA_PATH)
-collection = chroma.get_collection("frlg")
+MODEL_PATH  = os.path.join(os.path.dirname(__file__), "models", "all-MiniLM-L6-v2")
 
-print("Configuring Gemini...")
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel("gemini-2.5-flash")
+gemini = genai.GenerativeModel("gemini-2.5-flash")
 
-print("API ready.")
+# ── Lazy loaders ──────────────────────────────────────────────────────────────
+# Load heavy resources on first request so Flask binds the port immediately
+# and Render doesn't time out waiting for the app to start.
+
+_embedder   = None
+_collection = None
+
+
+def get_embedder():
+    global _embedder
+    if _embedder is None:
+        print("Loading embedding model...")
+        _embedder = SentenceTransformer(MODEL_PATH)
+        print("Embedding model ready.")
+    return _embedder
+
+
+def get_collection():
+    global _collection
+    if _collection is None:
+        print("Connecting to ChromaDB...")
+        chroma = chromadb.PersistentClient(path=CHROMA_PATH)
+        _collection = chroma.get_collection("frlg")
+        print("ChromaDB ready.")
+    return _collection
+
 
 # ── Professor Oak system prompt ───────────────────────────────────────────────
 
@@ -48,20 +66,25 @@ Rules:
 - Never break character
 """
 
-# ── Query endpoint ────────────────────────────────────────────────────────────
+# ── Routes ────────────────────────────────────────────────────────────────────
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
+
 
 @app.route("/ask", methods=["POST"])
 def ask():
     data = request.get_json()
-    question = data.get("question", "").strip()
+    question = (data or {}).get("question", "").strip()
     if not question:
         return jsonify({"error": "No question provided"}), 400
 
     # 1. Embed the question
-    vector = embedder.encode(question).tolist()
+    vector = get_embedder().encode(question).tolist()
 
     # 2. Retrieve top chunks from ChromaDB
-    results = collection.query(
+    results = get_collection().query(
         query_embeddings=[vector],
         n_results=6,
         include=["documents", "metadatas", "distances"],
@@ -71,7 +94,7 @@ def ask():
     metadatas = results["metadatas"][0]
     distances = results["distances"][0]
 
-    # 3. Build context block for the prompt
+    # 3. Build context block
     context = "\n\n".join(
         f"[Source: {m['section_heading']} / {m['page_title']}]\n{doc}"
         for doc, m in zip(docs, metadatas)
@@ -89,7 +112,7 @@ Young Trainer's question: {question}
 Professor Oak's answer:"""
 
     # 5. Call Gemini
-    response = model.generate_content(prompt)
+    response = gemini.generate_content(prompt)
     answer   = response.text.strip()
 
     # 6. Build chunks list for debug view
@@ -109,11 +132,6 @@ Professor Oak's answer:"""
         "answer": answer,
         "chunks": chunks_used,
     })
-
-
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok"})
 
 
 if __name__ == "__main__":
