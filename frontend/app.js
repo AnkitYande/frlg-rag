@@ -1,7 +1,7 @@
 // ── Config ────────────────────────────────────────────────────────────────────
 // In local dev this points to your Flask server.
 // On GitHub Pages it points to your Render URL.
-const API_BASE = "http://localhost:5000";
+const API_BASE = "https://frlg-rag-backend.onrender.com"; // "http://localhost:5000";
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const chatWindow    = document.getElementById("chatWindow");
