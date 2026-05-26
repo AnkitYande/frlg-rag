@@ -12,7 +12,12 @@ load_dotenv()
 logging.getLogger("chromadb.telemetry").setLevel(logging.ERROR)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    "https://ankityande.github.io",
+    "http://localhost:5500",   # VS Code Live Server
+    "http://localhost:3000",   # any local dev
+    "null",                    # opening index.html directly from filesystem
+])
 
 CHROMA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "chroma")
 MODEL_PATH  = os.path.join(os.path.dirname(__file__), "models", "all-MiniLM-L6-v2")
