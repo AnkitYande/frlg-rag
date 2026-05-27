@@ -4,13 +4,13 @@
 const API_BASE = "https://frlg-rag-backend.onrender.com"; // "http://localhost:5000";
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const chatWindow    = document.getElementById("chatWindow");
+const chatWindow = document.getElementById("chatWindow");
 const questionInput = document.getElementById("questionInput");
-const sendBtn       = document.getElementById("sendBtn");
-const statusDot     = document.getElementById("statusDot");
-const chunkDrawer   = document.getElementById("chunkDrawer");
-const chunkList     = document.getElementById("chunkList");
-const closeDrawer   = document.getElementById("closeDrawer");
+const sendBtn = document.getElementById("sendBtn");
+const statusDot = document.getElementById("statusDot");
+const chunkDrawer = document.getElementById("chunkDrawer");
+const chunkList = document.getElementById("chunkList");
+const closeDrawer = document.getElementById("closeDrawer");
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let lastChunks = [];   // chunks from most recent API response
@@ -20,6 +20,14 @@ window.addEventListener("DOMContentLoaded", () => {
   checkHealth();
   showWelcome();
   setupListeners();
+  showAlert();
+});
+
+window.addEventListener("load", () => {
+  alert(
+    "Note: The backend of this application is served using the free tier of Render, which may take up to a minute to come online for the first query. " +
+    "Check the indicator light in the top right— when it turns green, Professor Oak's Lab is ready!"
+  );
 });
 
 // ── Health check ──────────────────────────────────────────────────────────────
@@ -122,7 +130,9 @@ function appendUserMessage(text) {
       <div class="sender-label">You</div>
       <div class="bubble">${escapeHtml(text)}</div>
     </div>
-    <div class="avatar-wrap">🧢</div>
+    <div class="avatar-wrap">
+      <img src="assets/trainer.png" alt="You" class="avatar-img"/>
+    </div>
   `;
   chatWindow.appendChild(msg);
   scrollToBottom();
@@ -141,7 +151,9 @@ function appendOakMessage(text, chunks) {
   }
 
   msg.innerHTML = `
-    <div class="avatar-wrap">🌿</div>
+    <div class="avatar-wrap">
+      <img src="assets/oak.png" alt="Professor Oak" class="avatar-img"/>
+    </div>
     <div class="bubble-wrap">
       <div class="sender-label">Professor Oak</div>
       <div class="bubble">${formattedText}</div>
@@ -163,7 +175,9 @@ function appendTypingIndicator() {
   const msg = document.createElement("div");
   msg.className = "msg oak";
   msg.innerHTML = `
-    <div class="avatar-wrap">🌿</div>
+    <div class="avatar-wrap">
+      <img src="assets/oak.png" alt="Professor Oak" class="avatar-img"/>
+    </div>
     <div class="bubble-wrap">
       <div class="sender-label">Professor Oak</div>
       <div class="bubble">
@@ -186,9 +200,9 @@ function showChunks(chunks) {
     const card = document.createElement("div");
     card.className = "chunk-card";
 
-    const sourceBadgeClass = chunk.source === "serebii" ? "serebii" : "bulbapedia";
-    const sourceLabel      = chunk.source === "serebii" ? "Serebii" : "Bulbapedia";
-    const similarityPct    = Math.round((1 - chunk.distance) * 100);
+    const sourceBadgeClass = chunk.source_url && chunk.source_url.includes("serebii") ? "serebii" : "bulbapedia";
+    const sourceLabel = chunk.source_url && chunk.source_url.includes("serebii") ? "Serebii" : "Bulbapedia";
+    const similarityPct = Math.round((1 - chunk.distance) * 100);
 
     card.innerHTML = `
       <div class="chunk-card-title">${escapeHtml(chunk.heading)}</div>

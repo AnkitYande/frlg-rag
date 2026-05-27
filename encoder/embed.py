@@ -27,7 +27,7 @@ def main():
         pass
     collection = chroma.get_or_create_collection(
         name=COLLECTION_NAME,
-        metadata={"hnsw:space": "cosine"},
+        metadata={"hnsw:space": "cosine", "hnsw:search_ef": 200},
     )
 
     vectors = []
