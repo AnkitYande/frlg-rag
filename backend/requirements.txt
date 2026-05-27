@@ -1,7 +1,9 @@
 flask==3.0.3
 flask-cors==4.0.1
 chromadb==0.5.3
-sentence-transformers==3.0.1
 google-generativeai==0.7.2
 python-dotenv==1.0.1
 gunicorn==22.0.0
+
+# Removed as we're now using Gemini API for embeddings instead of local model
+# sentence-transformers==3.0.1 

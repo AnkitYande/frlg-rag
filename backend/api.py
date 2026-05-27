@@ -20,7 +20,8 @@ CORS(app, origins=[
 ])
 
 CHROMA_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "chroma")
-MODEL_PATH  = os.path.join(os.path.dirname(__file__), "models", "all-MiniLM-L6-v2")
+# MODEL_PATH  = os.path.join(os.path.dirname(__file__), "models", "all-MiniLM-L6-v2")
+EMBED_MODEL = "models/gemini-embedding-001"
 
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 gemini = genai.GenerativeModel("gemini-2.5-flash")
@@ -29,18 +30,23 @@ gemini = genai.GenerativeModel("gemini-2.5-flash")
 # Imports of heavy libraries (torch, chromadb) are deferred into these
 # functions so Flask binds the port immediately on startup.
 
-_embedder   = None
+# _embedder   = None
 _collection = None
 
 
-def get_embedder():
-    global _embedder
-    if _embedder is None:
-        print("Loading embedding model...")
-        from sentence_transformers import SentenceTransformer
-        _embedder = SentenceTransformer(MODEL_PATH)
-        print("Embedding model ready.")
-    return _embedder
+def embed_query(text):
+    result = genai.embed_content(model=EMBED_MODEL, content=text)
+    return result["embedding"]
+
+# Local Modal - Replaced with Gemini API calls
+# def get_embedder():
+#     global _embedder
+#     if _embedder is None:
+#         print("Loading embedding model...")
+#         from sentence_transformers import SentenceTransformer
+#         _embedder = SentenceTransformer(MODEL_PATH)
+#         print("Embedding model ready.")
+#     return _embedder
 
 
 def get_collection():
@@ -88,7 +94,8 @@ def ask():
         return jsonify({"error": "No question provided"}), 400
 
     # 1. Embed the question
-    vector = get_embedder().encode(question).tolist()
+    # vector = get_embedder().encode(question).tolist()
+    vector = embed_query(question)
 
     # 2. Retrieve top chunks from ChromaDB
     results = get_collection().query(
